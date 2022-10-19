@@ -1,11 +1,4 @@
-import React, {
-  MouseEventHandler,
-  useCallback,
-  useEffect,
-  useReducer,
-  useRef,
-  useState,
-} from 'react'
+import React, { ButtonHTMLAttributes, DetailedHTMLFactory, HTMLAttributes, MouseEventHandler, PropsWithChildren, useEffect, useReducer, useRef, useState } from 'react'
 
 interface Payload {
   text: string
@@ -19,12 +12,39 @@ interface Todo {
 
 type Action = { type: 'ADD'; text: string } | { type: 'REMOVE'; id: number }
 
-function Home() {
+const useNumber = (initialValue: number) => useState<number>(initialValue)
+
+type UseNumberValue = ReturnType<typeof useNumber>[0]
+type UseNumberSetValue = ReturnType<typeof useNumber>[1]
+
+const Incrementer: React.FC<{
+  value: UseNumberValue
+  setValue: UseNumberSetValue
+}> = ({ value, setValue }) => {
+  return (
+    <button
+      onClick={() => {
+        setValue(value + 1)
+      }}
+    >
+      Add - {value}
+    </button>
+  )
+}
+
+// eslint-disable-next-line react/prop-types
+const Button: React.FunctionComponent<PropsWithChildren<ButtonHTMLAttributes<HTMLButtonElement>>> & { title?: string } = ({ title, children, ...props }) => {
+  return <button {...props}>{title ?? children}</button>
+}
+
+const Home = () => {
   const onInputClick: MouseEventHandler<HTMLInputElement> = (e) => {
     console.log(`!!`, e?.target)
   }
 
   const [payload, setPayload] = useState<Payload | null>(null)
+  const [value, setValue] = useNumber(0)
+
   useEffect(() => {
     fetch('../../dist/assets/data.json')
       .then((resp) => resp.json())
@@ -72,7 +92,7 @@ function Home() {
       {todos.map((todo) => (
         <div key={todo.id}>
           {todo.text}
-          <button
+          <Button
             type="button"
             onClick={() =>
               dispatch({
@@ -82,12 +102,14 @@ function Home() {
             }
           >
             Remove
-          </button>
+          </Button>
         </div>
       ))}
       <div>
         <input type="text" ref={inputRef} />
-        <button onClick={onAddTodo}>Add Todo</button>
+        <Button onClick={onAddTodo}>Add Todo</Button>
+        <br />
+        <Incrementer setValue={setValue} value={value} />
       </div>
     </>
   )
