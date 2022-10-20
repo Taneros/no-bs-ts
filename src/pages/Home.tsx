@@ -1,115 +1,66 @@
-import React, { ButtonHTMLAttributes, DetailedHTMLFactory, HTMLAttributes, MouseEventHandler, PropsWithChildren, useEffect, useReducer, useRef, useState } from 'react'
+import React, { DetailedHTMLProps, HTMLAttributes, ReactNode, useRef } from 'react'
+import { useTodos } from '../useTodos'
 
-interface Payload {
-  text: string
-}
-
-interface Todo {
-  id: number
-  done: boolean
-  text: string
-}
-
-type Action = { type: 'ADD'; text: string } | { type: 'REMOVE'; id: number }
-
-const useNumber = (initialValue: number) => useState<number>(initialValue)
-
-type UseNumberValue = ReturnType<typeof useNumber>[0]
-type UseNumberSetValue = ReturnType<typeof useNumber>[1]
-
-const Incrementer: React.FC<{
-  value: UseNumberValue
-  setValue: UseNumberSetValue
-}> = ({ value, setValue }) => {
-  return (
-    <button
-      onClick={() => {
-        setValue(value + 1)
-      }}
-    >
-      Add - {value}
-    </button>
-  )
-}
-
-// eslint-disable-next-line react/prop-types
-const Button: React.FunctionComponent<PropsWithChildren<ButtonHTMLAttributes<HTMLButtonElement>>> & { title?: string } = ({ title, children, ...props }) => {
+const Button: React.FunctionComponent<DetailedHTMLProps<React.ButtonHTMLAttributes<HTMLButtonElement>, HTMLButtonElement>> & { title?: string } = ({
+  title,
+  children,
+  ...props
+}): JSX.Element => {
   return <button {...props}>{title ?? children}</button>
 }
 
 const Home = () => {
-  const onInputClick: MouseEventHandler<HTMLInputElement> = (e) => {
-    console.log(`!!`, e?.target)
-  }
-
-  const [payload, setPayload] = useState<Payload | null>(null)
-  const [value, setValue] = useNumber(0)
-
-  useEffect(() => {
-    fetch('../../dist/assets/data.json')
-      .then((resp) => resp.json())
-      .then((data) => {
-        setPayload(data)
-      })
-  }, [])
-
-  const [todos, dispatch] = useReducer((state: Todo[], action: Action) => {
-    switch (action.type) {
-      case 'ADD':
-        return [
-          ...state,
-          {
-            id: state.length,
-            text: action.text,
-            done: false,
-          },
-        ]
-      case 'REMOVE':
-        return state.filter((el) => el.id !== action.id)
-      default:
-        return state
-    }
-  }, [])
-
   const inputRef = useRef<HTMLInputElement>(null)
 
+  const { todos, addTodo, removeTodo } = useTodos([
+    {
+      id: 1,
+      text: 'First!',
+      done: false,
+    },
+  ])
+
+  // PropsWithChildren<DetailedHTMLFactory<HTMLAttributes<HTMLUListElement>, HTMLUListElement>>
+
+  const UL = <T,>({
+    items,
+    render,
+  }: DetailedHTMLProps<HTMLAttributes<HTMLUListElement>, HTMLUListElement> & { items: T[]; render: (item: T) => ReactNode }): JSX.Element => (
+    <ul>
+      {items.map((item, index) => (
+        <li key={index}>{render(item)}</li>
+      ))}
+    </ul>
+  )
+
   const onAddTodo = () => {
-    if (inputRef.current) {
-      dispatch({
-        type: 'ADD',
-        text: inputRef.current.value,
-      })
+    if (inputRef.current && inputRef.current.value !== '') {
+      addTodo(inputRef.current.value)
       inputRef.current.value = ''
     }
   }
 
+  const onRemoveTodo = (id: number) => {
+    removeTodo(id)
+  }
+
   return (
     <>
-      <h1>Input</h1>
-      <input type="text" onClick={onInputClick} />
-      <div>{JSON.stringify(payload)}</div>
-      <h2>Todos:</h2>
-      {todos.map((todo) => (
-        <div key={todo.id}>
-          {todo.text}
-          <Button
-            type="button"
-            onClick={() =>
-              dispatch({
-                type: 'REMOVE',
-                id: todo.id,
-              })
-            }
-          >
-            Remove
-          </Button>
-        </div>
-      ))}
+      <h1>Todos:</h1>
+      <UL
+        items={todos}
+        render={(todo) => (
+          <>
+            {todo.text}
+            <Button type="button" onClick={() => onRemoveTodo(todo.id)}>
+              Remove
+            </Button>
+          </>
+        )}
+      />
       <div>
         <input type="text" ref={inputRef} />
         <Button onClick={onAddTodo}>Add Todo</Button>
-        <br />
-        <Incrementer setValue={setValue} value={value} />
       </div>
     </>
   )
