@@ -20,15 +20,20 @@ const Home = () => {
     },
   ])
 
-  // PropsWithChildren<DetailedHTMLFactory<HTMLAttributes<HTMLUListElement>, HTMLUListElement>>
-
   const UL = <T,>({
     items,
     render,
-  }: DetailedHTMLProps<HTMLAttributes<HTMLUListElement>, HTMLUListElement> & { items: T[]; render: (item: T) => ReactNode }): JSX.Element => (
+    itemClick,
+  }: DetailedHTMLProps<HTMLAttributes<HTMLUListElement>, HTMLUListElement> & {
+    items: T[]
+    render: (item: T) => ReactNode
+    itemClick: (item: T) => void
+  }): JSX.Element => (
     <ul>
       {items.map((item, index) => (
-        <li key={index}>{render(item)}</li>
+        <li key={index} onClick={() => itemClick(item)}>
+          {render(item)}
+        </li>
       ))}
     </ul>
   )
@@ -57,6 +62,7 @@ const Home = () => {
             </Button>
           </>
         )}
+        itemClick={(item) => alert(item.id)}
       />
       <div>
         <input type="text" ref={inputRef} />
