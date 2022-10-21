@@ -1,5 +1,5 @@
 import React, { DetailedHTMLProps, HTMLAttributes, ReactNode, useRef } from 'react'
-import { useTodos } from '../useTodos'
+import { TodosProvider, useTodos } from '../useTodos'
 
 const Button: React.FunctionComponent<DetailedHTMLProps<React.ButtonHTMLAttributes<HTMLButtonElement>, HTMLButtonElement>> & { title?: string } = ({
   title,
@@ -9,34 +9,27 @@ const Button: React.FunctionComponent<DetailedHTMLProps<React.ButtonHTMLAttribut
   return <button {...props}>{title ?? children}</button>
 }
 
+const UL = <T,>({
+  items,
+  render,
+  itemClick,
+}: DetailedHTMLProps<HTMLAttributes<HTMLUListElement>, HTMLUListElement> & {
+  items: T[]
+  render: (item: T) => ReactNode
+  itemClick: (item: T) => void
+}): JSX.Element => (
+  <ul>
+    {items.map((item, index) => (
+      <li key={index} onClick={() => itemClick(item)}>
+        {render(item)}
+      </li>
+    ))}
+  </ul>
+)
+
 const Home = () => {
   const inputRef = useRef<HTMLInputElement>(null)
-
-  const { todos, addTodo, removeTodo } = useTodos([
-    {
-      id: 1,
-      text: 'First!',
-      done: false,
-    },
-  ])
-
-  const UL = <T,>({
-    items,
-    render,
-    itemClick,
-  }: DetailedHTMLProps<HTMLAttributes<HTMLUListElement>, HTMLUListElement> & {
-    items: T[]
-    render: (item: T) => ReactNode
-    itemClick: (item: T) => void
-  }): JSX.Element => (
-    <ul>
-      {items.map((item, index) => (
-        <li key={index} onClick={() => itemClick(item)}>
-          {render(item)}
-        </li>
-      ))}
-    </ul>
-  )
+  const { todos, addTodo, removeTodo } = useTodos()
 
   const onAddTodo = () => {
     if (inputRef.current && inputRef.current.value !== '') {
@@ -50,7 +43,7 @@ const Home = () => {
   }
 
   return (
-    <>
+    <div>
       <h1>Todos:</h1>
       <UL
         items={todos}
@@ -68,8 +61,25 @@ const Home = () => {
         <input type="text" ref={inputRef} />
         <Button onClick={onAddTodo}>Add Todo</Button>
       </div>
-    </>
+    </div>
   )
 }
 
-export default Home
+const AppWrapper = () => {
+  return (
+    <TodosProvider initialTodos={[{ id: 1, text: 'First!', done: false }]}>
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: '1fr 1fr',
+          gridAutoFlow: 'column',
+        }}
+      >
+        <Home />
+        <Home />
+      </div>
+    </TodosProvider>
+  )
+}
+
+export default AppWrapper
