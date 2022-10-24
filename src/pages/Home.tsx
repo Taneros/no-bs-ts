@@ -1,5 +1,5 @@
 import React, { DetailedHTMLProps, HTMLAttributes, ReactNode, useRef } from 'react'
-import { TodosProvider, useTodos } from '../useTodos'
+import { useTodosManager } from '../useTodos'
 
 const Button: React.FunctionComponent<DetailedHTMLProps<React.ButtonHTMLAttributes<HTMLButtonElement>, HTMLButtonElement>> & { title?: string } = ({
   title,
@@ -27,9 +27,11 @@ const UL = <T,>({
   </ul>
 )
 
+const initialTodos = [{ id: 1, text: 'First!', done: false }]
+
 const Home = () => {
   const inputRef = useRef<HTMLInputElement>(null)
-  const { todos, addTodo, removeTodo } = useTodos()
+  const { todos, addTodo, removeTodo } = useTodosManager(initialTodos)
 
   const onAddTodo = () => {
     if (inputRef.current && inputRef.current.value !== '') {
@@ -67,7 +69,6 @@ const Home = () => {
 
 const AppWrapper = () => {
   return (
-    <TodosProvider initialTodos={[{ id: 1, text: 'First!', done: false }]}>
       <div
         style={{
           display: 'grid',
@@ -78,7 +79,6 @@ const AppWrapper = () => {
         <Home />
         <Home />
       </div>
-    </TodosProvider>
   )
 }
 
