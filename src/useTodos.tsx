@@ -68,13 +68,3 @@ export const useTodos = () => {
   const { todos, addTodo, removeTodo } = useContext(TodoContext)
   return { todos, addTodo, removeTodo }
 }
-
-// export const useAddTodo = () => {
-//   const { addTodo } = useContext(TodoContext)
-//   return addTodo
-// }
-
-// export const useRemoveTodo = () => {
-//   const { removeTodo } = useContext(TodoContext)
-//   return removeTodo
-// }
