@@ -1,5 +1,7 @@
-import React, { DetailedHTMLProps, HTMLAttributes, ReactNode, useRef } from 'react'
+import React, { DetailedHTMLProps, HTMLAttributes, ReactNode, useCallback, useRef } from 'react'
 import { useTodosManager } from '../useTodos'
+import { Provider, useSelector, useDispatch } from 'react-redux'
+import store, { selectTodos, addTodo, removeTodo, AppDispatch} from '../store'
 
 const Button: React.FunctionComponent<DetailedHTMLProps<React.ButtonHTMLAttributes<HTMLButtonElement>, HTMLButtonElement>> & { title?: string } = ({
   title,
@@ -27,21 +29,21 @@ const UL = <T,>({
   </ul>
 )
 
-const initialTodos = [{ id: 1, text: 'First!', done: false }]
-
 const Home = () => {
+  const todos = useSelector(selectTodos)
+  const dispatch = useDispatch()
   const inputRef = useRef<HTMLInputElement>(null)
-  const { todos, addTodo, removeTodo } = useTodosManager(initialTodos)
+  // const { todos, addTodo, removeTodo } = useTodosManager(initialTodos)
 
-  const onAddTodo = () => {
+  const onAddTodo = useCallback(() => {
     if (inputRef.current && inputRef.current.value !== '') {
-      addTodo(inputRef.current.value)
+      dispatch(addTodo(inputRef.current.value))
       inputRef.current.value = ''
     }
-  }
+  },[])
 
   const onRemoveTodo = (id: number) => {
-    removeTodo(id)
+    dispatch(removeTodo(id))
   }
 
   return (
@@ -52,7 +54,7 @@ const Home = () => {
         render={(todo) => (
           <>
             {todo.text}
-            <Button type="button" onClick={() => onRemoveTodo(todo.id)}>
+            <Button type="button" onClick={() =>onRemoveTodo(todo.id)}>
               Remove
             </Button>
           </>
@@ -69,16 +71,18 @@ const Home = () => {
 
 const AppWrapper = () => {
   return (
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: '1fr 1fr',
-          gridAutoFlow: 'column',
-        }}
-      >
-        <Home />
-        <Home />
-      </div>
+      <Provider store={store}>
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: '1fr 1fr',
+            gridAutoFlow: 'column',
+          }}
+        >
+          <Home />
+          <Home />
+        </div>
+      </Provider>
   )
 }
 
